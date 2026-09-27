@@ -1,0 +1,11 @@
+# Build output from docs site generators
+_site/
+.docusaurus/
+node_modules/
+build/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
