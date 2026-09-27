@@ -1,25 +1,57 @@
-# DeskAway Docs
+# deskaway-docs
 
-Cross-repo documentation for DeskAway: architecture decisions, product
-specs, and anything that spans more than one component.
+Documentation that spans more than one DeskAway repo: cross-repo
+architecture decisions, product specs, and system diagrams.
 
-Component-local docs live with their code. This repo is for the rest.
+This is the front door to the system — start here to find out what DeskAway
+is and which repo does what. Component-specific docs live with their code.
 
-## Component repositories
+## Status
 
-| Repo | Contents |
-| --- | --- |
-| [deskaway-protocol](https://github.com/away-desk/deskaway-protocol) | Wire protocol: JSON Schemas, enums, versioning policy |
-| [deskaway-relay](https://github.com/away-desk/deskaway-relay) | Node/TypeScript relay: HTTP + WebSocket, pairing, recording |
-| [deskaway-agent](https://github.com/away-desk/deskaway-agent) | Python planning/classification service |
-| [deskaway-desktop](https://github.com/away-desk/deskaway-desktop) | .NET Windows agent host |
-| [deskaway-android](https://github.com/away-desk/deskaway-android) | Android client |
-| [deskaway-infra](https://github.com/away-desk/deskaway-infra) | Terraform: envs, modules, runbooks |
+**Early development, nothing works yet.**
 
-## Layout
+That applies to the product, not just this repo: every component is
+scaffolding — agreed directory layouts and empty files, no running code
+anywhere. This repo holds only the index below; no ADR or spec has been
+written yet.
 
-Not yet established. Suggested starting points as content lands:
+## Running locally
 
-- `adr/` — architecture decision records
-- `specs/` — product and feature specs
-- `diagrams/` — source files for system diagrams
+Nothing to run. This repo is Markdown, with no site generator and no build
+step.
+
+```sh
+git clone https://github.com/away-desk/deskaway-docs.git
+```
+
+Read it in your editor or on GitHub. Well under ten minutes. If a docs site
+is added later, its build command belongs in this section.
+
+## The rest of DeskAway
+
+All components are under the
+**[away-desk](https://github.com/away-desk)** org:
+
+| Repo | What it does | Stack |
+| --- | --- | --- |
+| [deskaway-protocol](https://github.com/away-desk/deskaway-protocol) | The wire contract every component speaks. Start here. | JSON Schema |
+| [deskaway-relay](https://github.com/away-desk/deskaway-relay) | Cloud broker: sockets, pairing, sessions, recording | Node / TypeScript |
+| [deskaway-agent](https://github.com/away-desk/deskaway-agent) | Planning: task to checklist, reversibility, replanning | Python |
+| [deskaway-desktop](https://github.com/away-desk/deskaway-desktop) | Windows host that executes a run | .NET |
+| [deskaway-android](https://github.com/away-desk/deskaway-android) | Phone client: start, watch and approve a run | Kotlin |
+| [deskaway-infra](https://github.com/away-desk/deskaway-infra) | Cloud infrastructure and runbooks | Terraform |
+
+Roughly, the shape of the system: a phone
+([android](https://github.com/away-desk/deskaway-android)) drives a run
+executing on a Windows machine
+([desktop](https://github.com/away-desk/deskaway-desktop)), brokered through
+the cloud ([relay](https://github.com/away-desk/deskaway-relay)), with the
+plan produced by [agent](https://github.com/away-desk/deskaway-agent) and
+every message shaped by
+[protocol](https://github.com/away-desk/deskaway-protocol).
+
+## Contributing
+
+Guidance for this repo — including what belongs here rather than in a
+component repo, and the rule every README follows — is in
+[AGENT.md](./AGENT.md).
