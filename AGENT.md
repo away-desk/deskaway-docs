@@ -102,7 +102,7 @@ project is one person reviewing their own work, it is the self-check that
 catches what you were about to skip — so fill it in honestly rather than
 deleting the prompts.
 
-- Answer all four. "N/A" is a fine answer; a blank section is not.
+- Answer all five. "N/A" is a fine answer; a blank section is not.
 - **Which unit of the plan this belongs to** is the one that pays off later.
   In five months this is how you find which PR did what, so name the unit,
   not the file you touched.
@@ -110,7 +110,7 @@ deleting the prompts.
   acknowledged gap is a decision; an unmentioned one is a bug you will
   rediscover.
 - Change the template when a prompt stops earning its place, and keep it at
-  four or five. A template long enough to skim past is worse than none.
+  five or six. A template long enough to skim past is worse than none.
 
 ## Rule: keep CONTRIBUTING.md short
 
@@ -181,3 +181,104 @@ Commit freely — a local commit is not a GitHub action.
 
 A rejected or unanswered request is a stop, not a prompt to find another
 route to the same result.
+
+## Rule: how docs are maintained, everywhere
+
+Three rules govern documentation in every DeskAway repo, this one included.
+
+**1. A decision is not locked until it is written.** An unwritten decision lives in a
+chat window, and a chat window is gone. If a pull request settled something, the ADR
+belongs in that pull request.
+
+**2. The doc changes in the same pull request as the code.** Not in a follow-up. The
+pull request template asks which doc changed or why none was needed; answering that
+one line honestly catches almost everything.
+
+**3. Docs are written for someone who was not there.** Not for you today — for a
+stranger, or for you in March having forgotten all of it. Any sentence that only
+makes sense because you remember the conversation needs rewriting. The test: could
+someone who has never spoken to you act on this?
+
+The per-file rules — `architecture.md`, `adr/`, `local-setup.md`, `runbook.md` — live
+in each component repo's own `AGENT.md`, because the files live there. This repo holds
+cross-repo ADRs only; the format is the same, and the rule against editing an
+accepted one applies here too.
+
+## Rule: check for keys before staging or committing
+
+Run this before `git add`, and again before `git commit`. A secret that reaches a
+commit is compromised even if the next commit removes it — it stays in the history,
+in every clone, and in any fork. Rotating it is then the only real fix, so the
+cheap moment to catch it is before it is staged.
+
+### The check
+
+Paste this at the repo root. It reports what *would* be committed, not what is on
+disk:
+
+```sh
+# 1. What is actually staged?
+git diff --cached --name-only
+
+# 2. Would any credential-shaped file be committed?
+git diff --cached --name-only | grep -Ei '\.(pem|key|pfx|p12|jks|keystore|snk|ppk|tfstate|tfvars)$|(^|/)\.env($|\.)|(^|/)(id_rsa|id_ed25519|credentials|secrets?\.(ya?ml|json))$'
+
+# 3. Does any staged content look like a secret?
+git diff --cached -U0 | grep -nEi '(api[_-]?key|secret|passwo?rd|token|bearer|private[_-]?key|access[_-]?key)[[:space:]]*[:=]|BEGIN [A-Z ]*PRIVATE KEY|sk-[A-Za-z0-9]{16,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,}|eyJ[A-Za-z0-9_-]{20,}'
+
+# 4. Is anything credential-shaped already tracked from an earlier commit?
+git ls-files | grep -Ei '\.(pem|key|pfx|p12|jks|keystore|snk|ppk|tfstate|tfvars)$|(^|/)\.env($|\.)'
+```
+
+**Checks 2, 3 and 4 must print nothing.** If any of them prints, stop and deal with
+it before continuing — do not commit "just to save progress".
+
+### Reading the results
+
+- **A hit in check 2 or 4** — the file must not be tracked. Add the pattern to
+  `.gitignore`, then `git rm --cached <file>` to untrack it while keeping your local
+  copy.
+- **A hit in check 3** — read it before assuming the worst. A variable *name* in a
+  config schema, a documented placeholder, or `KEY_HERE` in an example is fine. An
+  actual value is not. If you cannot tell, treat it as real.
+- **A hit that is genuinely a false positive** — leave it and move on. Do not add a
+  suppression; the next person needs to see the same hit and make the same
+  judgement.
+
+### If a secret is already committed
+
+Assume it is public from the moment it existed in a commit.
+
+1. **Rotate the credential first.** Before touching git history, before telling
+   anyone. A rotated secret in history is a non-event; an unrotated one removed from
+   history is still a live secret sitting in someone's clone and in the reflog.
+2. Then remove it from the working tree and add the pattern to `.gitignore`.
+3. Only then consider rewriting history, and only if it never left this machine.
+   Once it is pushed, rewriting is not a fix — the rotation was the fix.
+4. Note it in the pull request. A quietly rotated key is a thing nobody can audit.
+
+### What each repo's `.gitignore` must already cover
+
+Keeping these in `.gitignore` is what makes the check above quiet enough to be
+worth running:
+
+- **Every repo** — `.env` and `.env.*` with an exception for `.env.example`, plus
+  `*.pem` and `*.key`.
+- **`deskaway-desktop`** — `*.pfx` and `*.snk`. Code-signing material; treat it as
+  more sensitive than a service credential, because it signs software that runs
+  commands on people's machines.
+- **`deskaway-android`** — `*.jks`, `*.keystore`, `keystore.properties`,
+  `signing.properties`. Same reasoning.
+- **`deskaway-infra`** — `*.tfstate*`, `*.tfvars`, `*.tfplan`, and `.terraform/`.
+  **State and plan files contain resolved secret values in plaintext**, which is why
+  they are ignored rather than merely discouraged. Never paste a raw plan into an
+  issue or a pull request comment either.
+
+If you add a new kind of credential to a repo, add its pattern to `.gitignore` in
+the same pull request that introduces it — not after the first near miss.
+
+### A note on `.env.example`
+
+It is tracked deliberately: it documents which variables exist. It holds **names and
+obviously-fake values only**. The moment a real value is pasted in for convenience,
+the file stops being a template and becomes a leak with an innocent-looking name.
