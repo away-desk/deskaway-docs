@@ -10,10 +10,12 @@ is and which repo does what. Component-specific docs live with their code.
 
 **Early development, nothing works yet.**
 
-That applies to the product, not just this repo: every component is
-scaffolding — agreed directory layouts and empty files, no running code
-anywhere. This repo holds only the index below; no ADR or spec has been
-written yet.
+That applies to the product, not just this repo. The wire envelope and the
+connection messages are now defined in `deskaway-protocol`; every other
+component is still scaffolding with no running code. This repo holds the index
+below and the first entry of the threat model,
+[`security/threat-model.md`](./security/threat-model.md). No cross-repo ADR or
+spec has been written yet.
 
 ## Running locally
 

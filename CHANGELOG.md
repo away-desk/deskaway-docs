@@ -9,6 +9,10 @@ and this repository follows [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- security/threat-model.md, with its first entry: the folder a desktop
+  reports, shown on the phone, is self-reported and cannot be verified by the
+  relay.
+
 - SECURITY.md: reporting route corrected. Private vulnerability reporting is a
   public-repository feature and was never enabled, so the file now routes
   reports through a repo issue and carries a checklist to work through before
