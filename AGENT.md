@@ -33,6 +33,8 @@ auto-updated.
 README.md                 # index of every component repo
 AGENT.md                  # this file
 CLAUDE.md                 # pointer to this file
+security/
+  threat-model.md         # what is trusted, what cannot be verified; grows until Day 50
 ```
 
 That is the entire repo today. The layout below is proposed, not built —
